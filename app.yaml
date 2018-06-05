@@ -9,5 +9,7 @@ automatic_scaling:
   max_pending_latency: 15s
 
 handlers:
+- url: /activity.*
+  script: activity.php
 - url: /.*
   script: proxy.php
