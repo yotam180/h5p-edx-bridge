@@ -23,4 +23,20 @@ foreach ($http_response_header as $header) {
 
 echo($response);
 
+// If we are serving an embed HTML page, we want to add a communicator 
+// script so we can send data to the top page.
+
+if (strpos($path, "/h5p/embed/") === 0) {
+?>
+<script type="text/javascript">
+    // This is the communicator script. It is written in JS and is 
+    // visible in client side. It lets us communicate with our top window.
+    // Console loggings are for debug purposes. Can be removed.
+    H5P.externalDispatcher.on('xAPI', function (event) {
+        top.postMessage({"type": "xAPI", event: event.data.statement}, "*");
+        console.log(event.data.statement);
+    });
+</script>
+<?php
+}
 ?>
