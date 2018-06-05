@@ -17,16 +17,53 @@ if (!isset($_GET["a"])) {
 <head>
     <title>H5P activity host</title>
 
-    <script type="text/javascript">
-        window.addEventListener("message", function(e) {
-            if (e.data["type"] && e.data.type == "xAPI") {
-                xAPI(e.data.event);
-            }
-        }, false);
+    <script src="https://files.edx.org/custom-js-example/jschannel.js"></script>
 
-        window.xAPI = function(event) {
-            console.log("Received xAPI event: ", event);
-        };
+    <script type="text/javascript">
+        (function() {
+            
+            /**
+            Listening to messages from the iframe
+            */
+            window.addEventListener("message", function(e) {
+                if (e.data["type"] && e.data.type == "xAPI") {
+                    xAPI(e.data.event);
+                }
+            }, false);
+
+            var state = {};
+            
+            /**
+            Actual event handler for events coming from iframe xAPI (H5P)
+            */
+            var xAPI = function(event) {
+                console.log("Received xAPI event: ", event);
+
+                if (event.result) {
+                    // An event that gives us grades
+                    state[event.object.id] = event.result;
+                    console.log(state);
+                }
+            };
+
+            var getGrade = function() {
+                return JSON.stringify(state);
+            };
+
+            var getState = getGrade;
+
+            var setState = function(s) {
+                console.log("SetState ", s);
+            }
+
+            /**
+            Things we have to do once window is loaded:
+            1. Open a channel to edX and send the getGrade, getState, setState functions.
+            */
+            window.addEventListener("load", function() {
+                
+            });
+        })();
     </script>
 </head>
 <body
