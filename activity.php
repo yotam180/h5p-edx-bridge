@@ -89,6 +89,13 @@ if (!isset($_GET["a"])) {
     style="margin: 0;">
 
     <!-- H5P activity iframe -->
-    <iframe width="100%" height="100%" frameBorder="0" src="/h5p/embed/<?php echo($_GET["a"]); ?>" />
+    <iframe width="100%" height="100%" frameBorder="0" src="/h5p/embed/<?php echo($_GET["a"]); ?>"></iframe>
+
+    <!-- For hiding the activity -->
+    <div id="hider" style="position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: rgba(100, 100, 100, 0.3); text-align: center; font-size: 30px; color: black; font-family: Arial;">
+        <div>
+            You have already completed this activity. Click to redo it.
+        </div>
+    </div>
 </body>
 </html>
