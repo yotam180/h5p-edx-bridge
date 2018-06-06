@@ -15,7 +15,7 @@ def check_function(e, ans):
             max_score += res["score"]["max"]
             achieved += res["score"]["raw"]
 
-    grade = float(achieved) / float(max_score)
+    grade = 0 if max_score == 0 else (float(achieved) / float(max_score))
     if grade < 0.4:
         return {"ok": False, "msg": "Score: " + str(round(grade * 100)) + "%"}
     elif grade < 0.85:
