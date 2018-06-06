@@ -46,14 +46,16 @@ if (!isset($_GET["a"])) {
                 }
             };
 
-            var getGrade = function() {
+            window.getGrade = function() {
                 return JSON.stringify(state);
             };
 
-            var getState = getGrade;
+            window.getState = getGrade;
 
-            var setState = function(s) {
-                console.log("SetState ", s);
+            window.setState = function(s) {
+                var stateString = arguments.length === 1 ? arguments[0] : arguments[1];
+                var state = JSON.parse(stateString);
+                console.log(state);
             }
 
             /**
@@ -61,8 +63,25 @@ if (!isset($_GET["a"])) {
             1. Open a channel to edX and send the getGrade, getState, setState functions.
             */
             window.addEventListener("load", function() {
-                
+                // Creating the communication channel if the window is embedded
+                if (window.parent !== window) {
+                    channel = Channel.build({
+                        window: window.parent,
+                        origin: "*",
+                        scope: "JSInput"
+                    });
+
+                    channel.bind("getState", getState);
+                    channel.bind("setState", setState);
+                    channel.bind("getGrade", getGrade);
+                }
             });
+
+            return {
+                getState: getState,
+                setState: setState,
+                getGrade: getGrade
+            };
         })();
     </script>
 </head>

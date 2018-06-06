@@ -32,7 +32,7 @@ if (strpos($path, "/h5p/embed/") === 0) {
         // This is the communicator script. It is written in JS and is 
         // visible in client side. It lets us communicate with our top window.
         H5P.externalDispatcher.on('xAPI', function (event) {
-            top.postMessage({"type": "xAPI", event: event.data.statement}, "*");
+            parent.postMessage({"type": "xAPI", event: event.data.statement}, "*");
         });
     </script>
 <?php
