@@ -81,7 +81,7 @@ def check_function(e, ans):
             initial_state="false"
             width="<?php echo $width; ?>"
             height="<?php echo $height; ?>"
-            html_file="http://localhost:8080/activity?a=<?php echo $h5p;?>"
+            html_file="https://h5p-edx.appspot.com/activity?a=<?php echo $h5p;?>"
             sop="false"
             />
     </customresponse>
