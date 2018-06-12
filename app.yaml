@@ -11,5 +11,7 @@ automatic_scaling:
 handlers:
 - url: /activity.*
   script: activity.php
+- url: /template.*
+  script: template.php
 - url: /.*
   script: proxy.php
