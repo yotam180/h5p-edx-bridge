@@ -1,6 +1,10 @@
 {{ body|safe }}
 
+<!-- TODO: Should we bring our custom file here instead of requiring it from edx.org? -->
+<script src="https://files.edx.org/custom-js-example/jschannel.js"></script>
 <script type="text/javascript">
+
+    // Object.prototype.isEmpty = function () { return Object.keys(this).length == 0; }
 
     function fetchSubcontentId(objectId) {
         let result = (/subContentId=([0-9a-z\-]+)/g).exec(objectId);
@@ -45,6 +49,38 @@
 
     function handleContentUpdate(event) {
         window.result = event.data.statement.result;
+    }
+
+    function getState() {
+        if (Object.keys(window.result).length > 0) {
+            return window.result;
+        }
+
+        if (!window.subContents) {
+            return {
+                completion: false,
+                score: { min: 0, max: 1, raw: 0, scaled: 0 } // ?
+            }
+        }
+
+        return {
+            completion: false,
+            score: Object.keys(window.subContents).reduce((score, subContentId) => {
+                if (!window.subContents[subContentId].score) {
+                    return score;
+                }
+
+                // TODO: Watch for bugs that might arise from this shady calculation
+                score.raw += window.subContents[subContentId].score.scaled;
+                score.scaled = (score.raw - score.min) / (score.max / score.min);
+
+                return score;
+            }, { min: 0, max: Object.keys(window.subContents).length, raw: 0, scaled: 0 })
+        }
+    }
+
+    function setState() {
+
     }
 
     window.addEventListener("load", main);
