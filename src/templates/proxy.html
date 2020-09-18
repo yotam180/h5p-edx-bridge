@@ -1,0 +1,51 @@
+{{ body|safe }}
+
+<script type="text/javascript">
+
+    function fetchSubcontentId(objectId) {
+        let result = (/subContentId=([0-9a-z\-]+)/g).exec(objectId);
+        if (!result) {
+            return "";
+        }
+
+        return result[1];
+    }
+
+    function main() {
+        let activityId = Object.keys(H5PIntegration.contents)[0]; // TODO: What if there is more than one?
+        window.subContents = JSON.parse(H5PIntegration.contents[activityId].jsonContent).questions;
+
+        if (window.subContents) {
+            window.subContents = window.subContents.reduce((dict, q) => {
+                dict[q.subContentId] = {};
+                return dict;
+            }, {});
+        }
+
+        window.result = {}; // ?
+
+        window.H5P.externalDispatcher.on("xAPI", onXAPI);
+    }
+
+    function onXAPI(event) {
+        let subContentId = fetchSubcontentId(event.data.statement.object.id);
+        console.log(event);
+
+        if (subContentId) {
+            handleSubcontentUpdate(subContentId, event);
+        }
+        else {
+            handleContentUpdate(event);
+        }
+    }
+
+    function handleSubcontentUpdate(subContentId, event) {
+        window.subContents[subContentId] = event.data.statement.result;
+    }
+
+    function handleContentUpdate(event) {
+        window.result = event.data.statement.result;
+    }
+
+    window.addEventListener("load", main);
+</script>
