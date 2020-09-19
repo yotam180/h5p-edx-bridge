@@ -23,6 +23,13 @@ ALLOWED_HEADERS = [
     "Last-Modified",
     "Server",
     "Set-Cookie",
+
+    "Connection",
+    "Accept",
+    "Accept-Encoding",
+    "Accept-Language",
+    "Cookie",
+    "User-Agent",
 ]
 
 
@@ -41,6 +48,13 @@ def pass_headers(_from, _to):  # TODO: Find another way to do this
         _to[x] = _from[x]
 
 
+def create_headers_from(_headers):
+    return {
+        header[0]: header[1]
+        for header in _headers if header[0] in ALLOWED_HEADERS
+    }
+
+
 @app.route("/")
 def index():
     return "Hello, world"
@@ -50,12 +64,11 @@ def index():
 def embed():
     path = request.args.get("website")
     if not path:
-        print("404ing")
         return "Website not specified", 404
 
     path = b64d(path)
 
-    res = requests.get(path)
+    res = requests.get(path, headers=create_headers_from(request.headers))
     if res.status_code != 200:
         return res.text, res.status_code
 
@@ -91,17 +104,15 @@ def proxy(path: str):
     base_path, *other_parts = path.split("/")
     rest_of_path = "/".join(other_parts)
 
-    print("decoding", base_path)
     try:
         base_path = b64d(base_path)
     except Exception:  # TODO: Be more specific
         return "Can't decode hex", 400
 
-    proxy_res = requests.get(base_path + rest_of_path)
+    proxy_res = requests.get(base_path + rest_of_path, headers=create_headers_from(request.headers))
 
     # TODO: This is not what we should do
     response = app.make_response(proxy_res.content)
-    print(response)
 
     pass_headers(proxy_res.headers, response.headers)
     response.headers["Access-Control-Allow-Origin"] = "*"
