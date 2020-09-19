@@ -54,6 +54,9 @@ def proxy(path: str):
     print(response)
 
     pass_headers(proxy_res.headers, response.headers)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Cache-Control"] = "public, max-age=2600000"
+
     return response
 
 
