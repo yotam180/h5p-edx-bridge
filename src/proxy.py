@@ -1,8 +1,9 @@
-from flask import Flask, Response, render_template
+from flask import Flask, Response, render_template, request
 import requests
 
 app = Flask(__name__)
 PROXY_PATH = "https://h5p.org/"  # TODO: Change this to be configurable
+EXTERNAL_URL = "http://localhost:5001/"
 ALLOWED_HEADERS = [
     # Cloudflare headers
     "Cf-Bgj",
@@ -53,7 +54,14 @@ def embed(embed_id: int):
     return response
 
 
-@ app.route("/<path:path>")
+@app.route("/template")
+def template_generator():
+    response = app.make_response(render_template("template.html", EXTERNAL_URL=EXTERNAL_URL, **request.args))
+    response.headers["Content-Type"] = "text/plain"
+    return response
+
+
+@app.route("/<path:path>")
 def proxy(path: str):
     proxy_res = requests.get(PROXY_PATH + path)
 

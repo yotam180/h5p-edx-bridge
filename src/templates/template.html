@@ -1,0 +1,29 @@
+<problem>
+    <customresponse cfn="check_function">
+        <script type="loncapa/python">
+<![CDATA[
+
+import json
+import sys
+def check_function(e, ans):
+    answer = json.loads(json.loads(ans)["answer"])
+    completion = answer["completion"]
+    score = float(answer["score"]["scaled"]) * 100 # Should output a number between 1 and 100
+
+    if score < {{failure or 40}}:
+        ok = False
+
+    elif score < {{success or 85}}:
+        ok = "Partial"
+
+    else:
+        ok = True
+
+    return {"ok": ok, "msg": "Score: " + str(score) + "%"}
+]]>
+        </script>
+
+        <jsinput gradefn="window.getGrade" get_statefn="window.getState" set_statefn="window.setState"
+            initial_state="false" width="100%" height="350px" html_file="{{EXTERNAL_URL}}embed/257153" sop="false" />
+    </customresponse>
+</problem>
