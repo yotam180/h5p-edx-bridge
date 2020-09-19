@@ -42,7 +42,14 @@ def embed(embed_id: int):
         return res.text, res.status_code
 
     body = res.text
-    return render_template("proxy.html", body=body)
+    response = app.make_response(render_template("proxy.html", body=body))
+
+    # TODO: Code duplication?
+    pass_headers(res.headers, response.headers)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Cache-Control"] = "public, max-age=2600000"
+
+    return response
 
 
 @ app.route("/<path:path>")

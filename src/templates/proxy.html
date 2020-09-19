@@ -95,10 +95,18 @@
     }
 
     function getState() {
-        return JSON.stringify(_getState());
+        try {
+            console.log("getting state");
+            return JSON.stringify(_getState());
+        } catch (e) {
+            console.log("Caught: ", e);
+        }
     }
 
-    function setState(state) {
+    function setState() {
+        var stateString = arguments.length === 1 ? arguments[0] : arguments[1];
+        var state = JSON.parse(stateString);
+
         if (state && state.completion) {
             document.getElementById('hider').style.display = 'flex';
         }
