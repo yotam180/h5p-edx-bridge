@@ -48,7 +48,6 @@
 
     function onXAPI(event) {
         let subContentId = fetchSubcontentId(event.data.statement.object.id);
-        console.log(event);
 
         if (subContentId) {
             handleSubcontentUpdate(subContentId, event);
@@ -67,7 +66,7 @@
     }
 
     function _getState() {
-        if (Object.keys(window.result).length > 0) {
+        if (window.result && Object.keys(window.result).length > 0) {
             return window.result;
         }
 
@@ -96,7 +95,6 @@
 
     function getState() {
         try {
-            console.log("getting state");
             return JSON.stringify(_getState());
         } catch (e) {
             console.log("Caught: ", e);

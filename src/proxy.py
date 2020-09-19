@@ -47,7 +47,8 @@ def embed(embed_id: int):
     # TODO: Code duplication?
     pass_headers(res.headers, response.headers)
     response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Cache-Control"] = "public, max-age=2600000"
+    # TODO: Put here sth else in production
+    response.headers["Cache-Control"] = "no-cache"
 
     return response
 
