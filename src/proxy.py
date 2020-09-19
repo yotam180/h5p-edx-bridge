@@ -93,7 +93,7 @@ def proxy(path: str):
     print("decoding", base_path)
     try:
         base_path = b64d(base_path)
-    except Exception: # TODO: Be more specific
+    except Exception:  # TODO: Be more specific
         return "Can't decode hex", 400
 
     proxy_res = requests.get(base_path + rest_of_path)
@@ -109,4 +109,4 @@ def proxy(path: str):
     return response
 
 
-app.run(port=5001, debug=True)
+app.run(port=5001, debug=True, threaded=True)
