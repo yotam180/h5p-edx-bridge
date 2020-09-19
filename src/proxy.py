@@ -1,5 +1,7 @@
 from flask import Flask, Response, render_template, request
 import requests
+import urllib
+import base64
 
 app = Flask(__name__)
 PROXY_PATH = "https://h5p.org/"  # TODO: Change this to be configurable
@@ -24,6 +26,14 @@ ALLOWED_HEADERS = [
 ]
 
 
+def b64e(x):
+    return str(base64.b64encode(bytes(x, "utf-8")), "utf-8")
+
+
+def b64d(x):
+    return str(base64.b64decode(bytes(x + "===", "utf-8")), "utf-8")
+
+
 def pass_headers(_from, _to):  # TODO: Find another way to do this
     for x in _from:
         if x not in ALLOWED_HEADERS:
@@ -36,13 +46,27 @@ def index():
     return "Hello, world"
 
 
-@app.route("/embed/<int:embed_id>")
-def embed(embed_id: int):
-    res = requests.get(PROXY_PATH + "h5p/embed/" + str(embed_id))
+@app.route("/embed")
+def embed():
+    path = request.args.get("website")
+    if not path:
+        print("404ing")
+        return "Website not specified", 404
+
+    path = b64d(path)
+
+    res = requests.get(path)
     if res.status_code != 200:
         return res.text, res.status_code
 
-    body = res.text
+    parsed = urllib.parse.urlparse(path)
+    base_path = f"{parsed.scheme}://{parsed.netloc}/"
+    redirect_path = "/" + b64e(base_path) + "/"
+
+    body = res.text\
+        .replace('src="/', 'src="' + redirect_path)\
+        .replace('href="/', 'href="' + redirect_path)
+
     response = app.make_response(render_template("proxy.html", body=body))
 
     # TODO: Code duplication?
@@ -63,7 +87,16 @@ def template_generator():
 
 @app.route("/<path:path>")
 def proxy(path: str):
-    proxy_res = requests.get(PROXY_PATH + path)
+    base_path, *other_parts = path.split("/")
+    rest_of_path = "/".join(other_parts)
+
+    print("decoding", base_path)
+    try:
+        base_path = b64d(base_path)
+    except Exception: # TODO: Be more specific
+        return "Can't decode hex", 400
+
+    proxy_res = requests.get(base_path + rest_of_path)
 
     # TODO: This is not what we should do
     response = app.make_response(proxy_res.content)
