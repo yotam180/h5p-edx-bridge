@@ -2,7 +2,9 @@
 
 
 <!-- TODO: Should we bring our custom file here instead of requiring it from edx.org? -->
-<script src="https://files.edx.org/custom-js-example/jschannel.js"></script>
+<script type="text/javascript">
+    {% include "jschannel.js" %}
+</script>
 <script type="text/javascript">
 
     // Object.prototype.isEmpty = function () { return Object.keys(this).length == 0; }
@@ -30,6 +32,18 @@
         window.result = {}; // ?
 
         window.H5P.externalDispatcher.on("xAPI", onXAPI);
+
+        if (window.parent !== window) {
+            window.channel = Channel.build({
+                window: window.parent,
+                origin: "*",
+                scope: "JSInput"
+            });
+
+            channel.bind("getState", getState);
+            channel.bind("getGrade", getState);
+            channel.bind("setState", setState);
+        }
     }
 
     function onXAPI(event) {
@@ -52,7 +66,7 @@
         window.result = event.data.statement.result;
     }
 
-    function getState() {
+    function _getState() {
         if (Object.keys(window.result).length > 0) {
             return window.result;
         }
@@ -80,8 +94,17 @@
         }
     }
 
-    function setState() {
+    function getState() {
+        return JSON.stringify(_getState());
+    }
 
+    function setState(state) {
+        if (state && state.completion) {
+            document.getElementById('hider').style.display = 'flex';
+        }
+        else {
+            document.getElementById('hider').style.display = 'none';
+        }
     }
 
     window.addEventListener("load", main);
@@ -98,7 +121,7 @@
 
         background-color: rgba(0, 0, 0, 0.8);
         color: white;
-        display: flex;
+        display: none;
         flex-direction: column;
         justify-content: center;
         align-items: center;
