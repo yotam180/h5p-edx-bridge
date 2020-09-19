@@ -72,7 +72,7 @@
 
                 // TODO: Watch for bugs that might arise from this shady calculation
                 score.raw += window.subContents[subContentId].score.scaled;
-                score.scaled = (score.raw - score.min) / (score.max / score.min);
+                score.scaled = (score.raw - score.min) / (score.max - score.min);
 
                 return score;
             }, { min: 0, max: Object.keys(window.subContents).length, raw: 0, scaled: 0 })
