@@ -80,6 +80,7 @@ def embed():
 
 @app.route("/template")
 def template_generator():
+    # TODO: Validate that args has website, failure, success, etc.
     response = app.make_response(render_template("template.html", EXTERNAL_URL=EXTERNAL_URL, **request.args))
     response.headers["Content-Type"] = "text/plain"
     return response
