@@ -1,53 +1,54 @@
 from flask import Flask, Response, render_template, request, redirect, send_from_directory
 import requests
 import urllib
-import base64
+
+from http_stuff import ALLOWED_HEADERS
+from b64 import b64e, b64d
+
+"""
+How does this work?
+
+This hides H5P embeds behind a proxy. It does two things 
+- Serve the main embed file, and append a script to it to communicate with EdX
+- Serve as a proxy for other asset files (scripts/images/css/etc...)
+
+The main file is served under /embed?website=aaaaaaaa where aaaaaaaa is the embed URL encoded as base64
+The file will be retuend with a concatenated script, and also with modified paths (continue reading)
+
+Other asset files are served in the following way:
+
+/aaaaaaaa/sites/h5p/script.js will return the file /sites/h5p/script.js from the website aaaaaaaa (a being the website, base64 encoded)
+For example aaaaaaaa might be "https://h5p.org/" in base64.
+
+If the URL is not prepended with the base64 base path, we attempt to read the base path from the referer field (remember the ?website= parameter?)
+and we return a redirect to the URL with the base path prepended.
+
+Also, for the main embed file, every path we recognize as starting with "/", we convert it to {full url}/aaaaaaaaa/<rest of path> to avoid
+unnecessary redirections.
+
+"""
 
 app = Flask(__name__)
-PROXY_PATH = "https://h5p.org/"  # TODO: Change this to be configurable
-EXTERNAL_URL = "http://localhost:5001/"
-ALLOWED_HEADERS = [
-    # Cloudflare headers
-    "Cf-Bgj",
-    "CF-Cache-Status",
-    "CF-RAY",
-    "cf-request-id",
-
-    "Age",
-    "Cache-Control",
-    "Connection",
-    "Content-Type",
-    "Date",
-    "ETag",
-    "Expires",
-    "Last-Modified",
-    "Server",
-    "Set-Cookie",
-
-    "Connection",
-    "Accept",
-    "Accept-Language",
-    "Cookie",
-    "User-Agent",
-]
+EXTERNAL_URL = "http://localhost:5001/"  # TODO: This should come from an environment variable
 
 
-def b64e(x):
-    return str(base64.b64encode(bytes(x, "utf-8")), "utf-8")
-
-
-def b64d(x):
-    return str(base64.b64decode(bytes(x + "===", "utf-8")), "utf-8")
-
-
-def pass_headers(_from, _to):  # TODO: Find another way to do this
+def headers_requests_to_flask(_from, _to):  # TODO: Find another way to do this
+    """
+    Takes all headers from the _from headers set (returned from a requests call)
+    and adds them into the _to headers set that is to be returned to whoever called
+    our Flask request.
+    """
     for x in _from:
         if x not in ALLOWED_HEADERS:
             continue
         _to[x] = _from[x]
 
 
-def create_headers_from(_headers):
+def headers_flask_to_requests(_headers):
+    """
+    Takes the retrieved Flask headers from the incoming request, and converts them into a
+    dictionary to pass them into a requests dispatch.
+    """
     return {
         header[0]: header[1]
         for header in _headers if header[0] in ALLOWED_HEADERS
@@ -71,7 +72,7 @@ def embed():
         return "Website not specified", 404
 
     path = b64d(path)
-    res = requests.get(path, headers=create_headers_from(request.headers))
+    res = requests.get(path, headers=headers_flask_to_requests(request.headers))
     if res.status_code != 200:
         return res.text, res.status_code
 
@@ -86,7 +87,7 @@ def embed():
     response = app.make_response(render_template("proxy.html", body=body, **request.args))
 
     # TODO: Code duplication?
-    pass_headers(res.headers, response.headers)
+    headers_requests_to_flask(res.headers, response.headers)
     response.headers["Access-Control-Allow-Origin"] = "*"
     # TODO: Put here sth else in production
     response.headers["Cache-Control"] = "no-cache"
@@ -124,12 +125,12 @@ def proxy(path: str):
     except Exception:  # TODO: Be more specific
         return try_proxy_without_base64()
 
-    proxy_res = requests.get(base_path + rest_of_path, headers=create_headers_from(request.headers))
+    proxy_res = requests.get(base_path + rest_of_path, headers=headers_flask_to_requests(request.headers))
 
     # TODO: This is not what we should do
     response = app.make_response(proxy_res.content)
 
-    pass_headers(proxy_res.headers, response.headers)
+    headers_requests_to_flask(proxy_res.headers, response.headers)
     response.headers["Access-Control-Allow-Origin"] = "*"
     response.headers["Cache-Control"] = "public, max-age=2600000"
 
