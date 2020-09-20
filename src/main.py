@@ -136,4 +136,5 @@ def proxy(path: str):
     return response
 
 
-app.run(port=5001, debug=True, threaded=True)
+if __name__ == "__main__":
+    app.run(port=5001, debug=True, threaded=True)
