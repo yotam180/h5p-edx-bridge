@@ -6,3 +6,6 @@ automatic_scaling:
   max_idle_instances: 1
   min_pending_latency: 10s
   max_pending_latency: 15s
+
+env_variables:
+  EXTERNAL_URL: https://h5p-edx-2.ey.r.appspot.com/

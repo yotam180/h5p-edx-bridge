@@ -1,6 +1,7 @@
 from flask import Flask, Response, render_template, request, redirect, send_from_directory
 import requests
 import urllib
+import os
 
 from http_stuff import ALLOWED_HEADERS
 from b64 import b64e, b64d
@@ -29,7 +30,7 @@ unnecessary redirections.
 """
 
 app = Flask(__name__)
-EXTERNAL_URL = "http://localhost:5001/"  # TODO: This should come from an environment variable
+EXTERNAL_URL = os.environ.get("EXTERNAL_URL", "http://localhost:5001/")
 
 
 def headers_requests_to_flask(_from, _to):
