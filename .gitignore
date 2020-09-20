@@ -1,3 +1,5 @@
 .venv/
 .vscode/
 play/
+
+__pycache__/

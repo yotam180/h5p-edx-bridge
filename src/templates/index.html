@@ -1,164 +1,208 @@
 <html>
-    <head>
-        <title>H5P to EdX Bridge</title>
 
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
-            integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+<head>
+    <title>H5P to EdX Bridge</title>
 
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
-            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
-            crossorigin="anonymous"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
-            integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
-            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+        integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
 
-        <script>
-            function validURL(str) {
-                var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-                    '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-                    '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-                    '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-                    '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-                    '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-                return !!pattern.test(str);
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+        integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+        crossorigin="anonymous"></script>
+
+    <script>
+        function validURL(str) {
+            var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+                '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+                '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+                '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+                '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+                '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+            return !!pattern.test(str);
+        }
+
+        function processEmbedCode(text) {
+            let match = (/src="(.+?)"/g).exec(text);
+            if (!match) {
+                return validURL(text) ? text : null;
             }
 
-            function processEmbedCode(text) {
-                let match = (/src="(.+?)"/g).exec(text);
-                if (!match) {
-                    return validURL(text) ? text : null;
+            return validURL(match[1]) ? match[1] : null;
+        }
+
+        $(() => {
+            $("#generate").click(() => {
+                let embed_code = $("#embed_code").val();
+                if (!embed_code) {
+                    alert("No embed code was entered.");
+                    return;
                 }
 
-                return validURL(match[1]) ? match[1] : null;
-            }
+                let url = processEmbedCode(embed_code);
+                if (!url) {
+                    alert("Embed code did not contain a matching iframe url");
+                    return;
+                }
 
-            $(() => {
-                $("#generate").click(() => {
-                    let embed_code = $("#embed_code").val();
-                    if (!embed_code) {
-                        alert("No embed code was entered.");
-                        return;
+                let failure_threshold = parseInt($("#failure_threshold").val()) || 40;
+                let success_threshold = parseInt($("#success_threshold").val()) || 85;
+                let height = $("#height").val() || "350px";
+                let width = $("#width").val() || "100%";
+                let rtl = $("#rtl").is(":checked");
+
+                $.ajax({
+                    url: "/template",
+                    type: "GET",
+                    data: {
+                        website: btoa(url),
+                        rtl: rtl,
+                        failure: failure_threshold,
+                        success: success_threshold,
+                        height: height,
+                        width: width
+                    },
+                    success: (e) => {
+                        $("#result").text(e).css({ display: "block" });
                     }
-
-                    let url = processEmbedCode(embed_code);
-                    if (!url) {
-                        alert("Embed code did not contain a matching iframe url");
-                        return;
-                    }
-
-                    let failure_threshold = parseInt($("#failure_threshold").val()) || 40;
-                    let success_threshold = parseInt($("#success_threshold").val()) || 85;
-                    let rtl = $("#rtl").is(":checked");
-
-                    $.ajax({
-                        url: "/template",
-                        type: "GET",
-                        data: {
-                            website: btoa(url),
-                            rtl: rtl,
-                            failure: failure_threshold,
-                            success: success_threshold
-                        },
-                        success: (e) => {
-                            $("#result").text(e).css({display: "block"});
-                        }
-                    })
-                });
+                })
             });
-        </script>
-    </head>
-    <body>
-        <nav class="navbar navbar-expand-lg navbar-light bg-primary">
-            <a class="navbar-brand text-white" href="#">H5P to EdX Bridge</a>
-            <div style="flex: 1">&nbsp;</div>
-            <a href="https://github.com/yotam180/h5p-edx-bridge" class="btn btn-secondary">GitHub</a>
-        </nav>
-        <br/>
-        <center>
-            <h1>Connect H5P activities to your EdX courses</h1>
-        </center>
-        <br/>
-        <div class="container">
-            <h2>How do I use this?</h2>
-            <ol>
-                <li>First, use <a href="https://h5p.org">H5P.org</a> to create your activities (you can also create them using a Wordpress plugin and host them
+        });
+    </script>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-primary">
+        <a class="navbar-brand text-white" href="#">H5P to EdX Bridge</a>
+        <div style="flex: 1">&nbsp;</div>
+        <a href="https://github.com/yotam180/h5p-edx-bridge" class="btn btn-secondary">GitHub</a>
+    </nav>
+    <br />
+    <center>
+        <h1>Connect H5P activities to your EdX courses</h1>
+    </center>
+    <br />
+    <div class="container">
+        <h2>How do I use this?</h2>
+        <ol>
+            <li>First, use <a href="https://h5p.org">H5P.org</a> to create your activities (you can also create them
+                using a Wordpress plugin and host them
                 on wordpress, for example). As long as you have an embed code, you're good to go.</li>
-                <li>Scroll down to the snippet creator on this page, and paste the embed code into the textbox.</li>
-                <li>Fill out the settings (failure/success threshold, rtl problem, etc.)</li>
-                <li>A script will appear in the result panel. Copy it.</li>
-                <li>Go to EdX and add a new Custom Javascript Display and Grading problem. Paste the copied code into the editor</li>
-                <li>You will now see your activity, live in EdX. Try it out, and press the EdX submit button to get your task graded.</li>
-            </ol>
+            <li>Scroll down to the snippet creator on this page, and paste the embed code into the textbox.</li>
+            <li>Fill out the settings (failure/success threshold, rtl problem, etc.)</li>
+            <li>A script will appear in the result panel. Copy it.</li>
+            <li>Go to EdX and add a new Custom Javascript Display and Grading problem. Paste the copied code into the
+                editor</li>
+            <li>You will now see your activity, live in EdX. Try it out, and press the EdX submit button to get your
+                task graded.</li>
+        </ol>
 
-            <br /><hr/><br /><br />
-            
-            <h2>I want to use Microphone/Camera based activities</h2>
-            It's also possible! Use the "Enable Microphone and Camera" script from below. Copy it, and paste it into a new Raw HTML activity in your EdX page.
-            <br/>
-            That will make activities on that page microphone enabled.
-            <br/>
-            (Why do we do this? We have to bypass the same origin policy)
+        <br />
+        <hr /><br /><br />
 
-            <br /><br /><br /><hr /><br />
-            
-            <h2>Activity Snippet Creator</h2>
+        <h2>I want to use Microphone/Camera based activities</h2>
+        It's also possible! Use the "Enable Microphone and Camera" script from below. Copy it, and paste it into a new
+        Raw HTML activity in your EdX page.
+        <br />
+        That will make activities on that page microphone enabled.
+        <br />
+        (Why do we do this? We have to bypass the same origin policy)
 
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon1">
-                        H5P activity embed code
-                    </span>
-                </div>
-                <input id="embed_code" type="text" class="form-control" placeholder="Embed Code" aria-label="Embed Code"
-                    aria-describedby="basic-addon1">
+        <br /><br /><br />
+        <hr /><br />
+
+        <h2>Activity Snippet Creator</h2>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="basic-addon1">
+                    H5P activity embed code
+                </span>
             </div>
-
-            <span style="color: gray">* Scores between failure and success thresholds will cause the activity to be marked as "partial"</span>
-            <div class="row">
-                <div class="col-sm">
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">
-                                Failure threshold
-                            </span>
-                        </div>
-                        <input id="failure_threshold" type="text" class="form-control" placeholder="Score below this would be considered failure (default: 40)" aria-label=""
-                            aria-describedby="basic-addon1">
-                    </div>
-                </div>
-                <div class="col-sm">
-                    <div class="input-group mb-3">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text" id="basic-addon1">
-                                Success threshold
-                            </span>
-                        </div>
-                        <input id="success_threshold" type="text" class="form-control" placeholder="Score above this would be considered success (default: 85)"
-                            aria-label="" aria-describedby="basic-addon1">
-                    </div>
-                </div>
-            </div>
-
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <div class="input-group-text">
-                        <input id="rtl" type="checkbox" aria-label="Is the problem RTL (right to left)">
-                    </div>
-                </div>
-                <span style="margin: auto; padding-left: 10px; font-weight: bold;">Is the problem RTL? (right to left)</span>
-                <input type="text" style="visibility: hidden;" class="form-control" aria-label="Text input with checkbox">
-            </div>
-
-            <div id="generate" class="btn btn-primary">Generate code</div>
-            <br/><br/>
-            <pre style="background-color: #ccc; padding: 6px; display: none;" id="result"></pre>
-
-            <br/><hr/><br/><br/>
-
-            <h2>Camera and Microphone include scripts</h2>
-            Paste the following code into a Raw HTML activity in your EdX page:<br/>
-            <pre style="background-color: #ccc; padding: 6px;">&lt;script type="text/javascript" src="{{EXTERNAL_URL}}camera_microphone.js">&lt;/script></pre>
+            <input id="embed_code" type="text" class="form-control" placeholder="Embed Code" aria-label="Embed Code"
+                aria-describedby="basic-addon1">
         </div>
-    </body>
+
+        <span style="color: gray">* Scores between failure and success thresholds will cause the activity to be marked
+            as "partial"</span>
+        <div class="row">
+            <div class="col-sm">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">
+                            Failure threshold
+                        </span>
+                    </div>
+                    <input id="failure_threshold" type="text" class="form-control"
+                        placeholder="Score below this would be considered failure (default: 40)" aria-label=""
+                        aria-describedby="basic-addon1">
+                </div>
+            </div>
+            <div class="col-sm">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">
+                            Success threshold
+                        </span>
+                    </div>
+                    <input id="success_threshold" type="text" class="form-control"
+                        placeholder="Score above this would be considered success (default: 85)" aria-label=""
+                        aria-describedby="basic-addon1">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">
+                            Height
+                        </span>
+                    </div>
+                    <input id="height" type="text" class="form-control" placeholder="350px" aria-label=""
+                        aria-describedby="basic-addon1">
+                </div>
+            </div>
+            <div class="col-sm">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text" id="basic-addon1">
+                            Width
+                        </span>
+                    </div>
+                    <input id="width" type="text" class="form-control" placeholder="100%" aria-label=""
+                        aria-describedby="basic-addon1">
+                </div>
+            </div>
+        </div>
+
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <input id="rtl" type="checkbox" aria-label="Is the problem RTL (right to left)">
+                </div>
+            </div>
+            <span style="margin: auto; padding-left: 10px; font-weight: bold;">Is the problem RTL? (right to
+                left)</span>
+            <input type="text" style="visibility: hidden;" class="form-control" aria-label="Text input with checkbox">
+        </div>
+
+        <div id="generate" class="btn btn-primary">Generate code</div>
+        <br /><br />
+        <pre style="background-color: #ccc; padding: 6px; display: none;" id="result"></pre>
+
+        <br />
+        <hr /><br /><br />
+
+        <h2>Camera and Microphone include scripts</h2>
+        Paste the following code into a Raw HTML activity in your EdX page:<br />
+        <pre
+            style="background-color: #ccc; padding: 6px;">&lt;script type="text/javascript" src="{{EXTERNAL_URL}}camera_microphone.js">&lt;/script></pre>
+    </div>
+</body>
+
 </html>
