@@ -59,9 +59,9 @@ def index():
     return render_template("index.html", EXTERNAL_URL=EXTERNAL_URL)
 
 
-@app.route("/__static__/<path:path>")
-def static_files(path):
-    return send_from_directory("client/__static__/", path)
+@app.route("/camera_microphone.js")
+def static_files():
+    return send_from_directory("templates/", "camera_microphone.js")
 
 
 @app.route("/embed")
