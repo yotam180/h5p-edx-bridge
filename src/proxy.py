@@ -56,7 +56,7 @@ def create_headers_from(_headers):
 
 @app.route("/")
 def index():
-    return send_from_directory("client/", "index.html")
+    return render_template("index.html", EXTERNAL_URL=EXTERNAL_URL)
 
 
 @app.route("/__static__/<path:path>")
