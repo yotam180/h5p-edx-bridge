@@ -78,7 +78,7 @@ def embed():
         .replace('src="/', 'src="' + redirect_path)\
         .replace('href="/', 'href="' + redirect_path)
 
-    response = app.make_response(render_template("proxy.html", body=body))
+    response = app.make_response(render_template("proxy.html", body=body, **request.args))
 
     # TODO: Code duplication?
     pass_headers(res.headers, response.headers)

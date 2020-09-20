@@ -44,6 +44,14 @@
             channel.bind("getGrade", getState);
             channel.bind("setState", setState);
         }
+        {% if rtl %}
+        H5P.jQuery("*").each(function () {
+            if (this.style.textAlign == "" || this.style.textAlign == "left") {
+                this.style.textAlign == "right";
+            }
+            this.style.direction = "rtl";
+        });
+        {% endif %}
     }
 
     function onXAPI(event) {
