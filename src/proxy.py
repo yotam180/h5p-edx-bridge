@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template, request, redirect
+from flask import Flask, Response, render_template, request, redirect, send_from_directory
 import requests
 import urllib
 import base64
@@ -56,7 +56,12 @@ def create_headers_from(_headers):
 
 @app.route("/")
 def index():
-    return "Hello, world"
+    return send_from_directory("client/", "index.html")
+
+
+@app.route("/__static__/<path:path>")
+def static_files(path):
+    return send_from_directory("client/__static__/", path)
 
 
 @app.route("/embed")

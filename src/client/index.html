@@ -1,0 +1,49 @@
+<html>
+    <head>
+        <title>H5P to EdX Bridge</title>
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+            integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+            crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+            integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+            crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+            integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+            crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-light bg-primary">
+            <a class="navbar-brand text-white" href="#">H5P to EdX Bridge</a>
+        </nav>
+        <br/>
+        <center>
+            <h1>Connect H5P activities to your EdX courses</h1>
+        </center>
+        <br/>
+        <div class="container">
+            <h2>How do I use this?</h2>
+            <ol>
+                <li>First, use <a href="https://h5p.org">H5P.org</a> to create your activities (you can also create them using a Wordpress plugin and host them
+                on wordpress, for example). As long as you have an embed code, you're good to go.</li>
+                <li>Scroll down to the snippet creator on this page, and paste the embed code into the textbox.</li>
+                <li>Fill out the settings (failure/success threshold, rtl problem, etc.)</li>
+                <li>A script will appear in the result panel. Copy it.</li>
+                <li>Go to EdX and add a new Custom Javascript Display and Grading problem. Paste the copied code into the editor</li>
+                <li>You will now see your activity, live in EdX. Try it out, and press the EdX submit button to get your task graded.</li>
+            </ol>
+            <br/>
+            <h2>I want to use Microphone/Camera based activities</h2>
+            It's also possible! Use the "Enable Microphone and Camera" script from below. Copy it, and paste it into a new Raw HTML activity in your EdX page.
+            <br/>
+            That will make activities on that page microphone enabled.
+            <br/>
+            (Why do we do this? We have to bypass the same origin policy)
+            <br/><br/>
+            <h2>TODO: Add template generator, microphone and camera script</h2>
+        </div>
+    </body>
+</html>
