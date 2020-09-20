@@ -1,4 +1,4 @@
-# H5P to OpenEDX Bridge
+# [https://h5p-edx-2.ey.r.appspot.com/](H5P to OpenEDX Bridge)
 
 This helps people connect activities from [H5P](https://h5p.org) to [OpenEDX](https://open.edx.org/)
 
