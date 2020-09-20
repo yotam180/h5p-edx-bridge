@@ -26,7 +26,6 @@ ALLOWED_HEADERS = [
 
     "Connection",
     "Accept",
-    "Accept-Encoding",
     "Accept-Language",
     "Cookie",
     "User-Agent",
@@ -67,7 +66,6 @@ def embed():
         return "Website not specified", 404
 
     path = b64d(path)
-
     res = requests.get(path, headers=create_headers_from(request.headers))
     if res.status_code != 200:
         return res.text, res.status_code
