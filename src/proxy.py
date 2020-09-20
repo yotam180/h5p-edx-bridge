@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template, request
+from flask import Flask, Response, render_template, request, redirect
 import requests
 import urllib
 import base64
@@ -97,6 +97,18 @@ def template_generator():
     return response
 
 
+def try_proxy_without_base64():
+    referer = request.headers.get("Referer", "")
+    qs = urllib.parse.parse_qs(urllib.parse.urlparse(referer).query)
+    if "website" in qs:
+        website = b64d("".join(qs.get("website")))
+        parsed = urllib.parse.urlparse(website)
+        base_path = f"{parsed.scheme}://{parsed.netloc}/"
+        return redirect("/" + b64e(base_path) + request.path)
+
+    return "Can't decode hex", 400
+
+
 @app.route("/<path:path>")
 def proxy(path: str):
     base_path, *other_parts = path.split("/")
@@ -105,7 +117,7 @@ def proxy(path: str):
     try:
         base_path = b64d(base_path)
     except Exception:  # TODO: Be more specific
-        return "Can't decode hex", 400
+        return try_proxy_without_base64()
 
     proxy_res = requests.get(base_path + rest_of_path, headers=create_headers_from(request.headers))
 
