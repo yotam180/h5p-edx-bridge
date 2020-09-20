@@ -32,7 +32,7 @@ app = Flask(__name__)
 EXTERNAL_URL = "http://localhost:5001/"  # TODO: This should come from an environment variable
 
 
-def headers_requests_to_flask(_from, _to):  # TODO: Find another way to do this
+def headers_requests_to_flask(_from, _to):
     """
     Takes all headers from the _from headers set (returned from a requests call)
     and adds them into the _to headers set that is to be returned to whoever called
@@ -58,11 +58,6 @@ def headers_flask_to_requests(_headers):
 @app.route("/")
 def index():
     return render_template("index.html", EXTERNAL_URL=EXTERNAL_URL)
-
-
-@app.route("/camera_microphone.js")
-def static_files():
-    return send_from_directory("templates/", "camera_microphone.js")
 
 
 @app.route("/embed")
@@ -103,6 +98,11 @@ def template_generator():
     return response
 
 
+@app.route("/camera_microphone.js")
+def static_files():
+    return send_from_directory("templates/", "camera_microphone.js")
+
+
 def try_proxy_without_base64():
     referer = request.headers.get("Referer", "")
     qs = urllib.parse.parse_qs(urllib.parse.urlparse(referer).query)
@@ -127,7 +127,6 @@ def proxy(path: str):
 
     proxy_res = requests.get(base_path + rest_of_path, headers=headers_flask_to_requests(request.headers))
 
-    # TODO: This is not what we should do
     response = app.make_response(proxy_res.content)
 
     headers_requests_to_flask(proxy_res.headers, response.headers)
